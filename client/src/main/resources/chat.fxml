@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="565.0" prefWidth="813.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ChatControllerV2">
+    <ListView fx:id="listViewClient" layoutX="14.0" layoutY="14.0" prefHeight="494.0" prefWidth="375.0" />
+    <TextField fx:id="input" layoutX="14.0" layoutY="508.0" prefHeight="44.0" prefWidth="211.0" />
+    <Button layoutX="577.0" layoutY="508.0" mnemonicParsing="false" onAction="#send" prefHeight="44.0" prefWidth="97.0" text="SEND" />
+   <ListView fx:id="listViewServer" layoutX="398.0" layoutY="14.0" prefHeight="494.0" prefWidth="400.0" />
+   <Button layoutX="291.0" layoutY="508.0" mnemonicParsing="false" onAction="#get" prefHeight="44.0" prefWidth="97.0" text="GET" />
+   <Button layoutX="433.0" layoutY="509.0" mnemonicParsing="false" onAction="#refresh" prefHeight="44.0" prefWidth="97.0" text="REFREASH" />
+</AnchorPane>
