@@ -48,13 +48,12 @@ public class ChatControllerV2 implements Initializable {
                     Platform.runLater(() -> input.setText(s));*/
 
         Thread service = new Thread(() -> {
-            boolean flag = true;
             try {
                 while (true) {
                     Message message = (Message) is.readObject();
                     Commands command = message.getCommand();
                     if (command.equals(Commands.REFRESH)) serverView();
-                    if (command.equals(Commands.GET_FILE)) getFile(message);
+                    else if (command.equals(Commands.GET_FILE)) getFile(message);
                 }
             } catch (Exception e) {
                 log.error(e.getMessage());
@@ -111,6 +110,7 @@ public class ChatControllerV2 implements Initializable {
     }
 
     private void serverView() throws IOException, ClassNotFoundException {
+        clientView();
         Message message = (Message) is.readObject();
         StringBuilder stringBuilder = new StringBuilder(message.getText());
         stringBuilder.deleteCharAt(message.getText().length() - 1).deleteCharAt(0);
@@ -119,7 +119,6 @@ public class ChatControllerV2 implements Initializable {
             listViewServer.getItems().clear();
             listViewServer.getItems().addAll(list);
         });
-        clientView();
     }
 
     private void getFile(Message message) throws IOException {
