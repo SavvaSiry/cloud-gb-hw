@@ -26,11 +26,12 @@ public class Authorization {
         String user = client.getText();
 
         Message message = Net.sendMessage(Message.builder()
-        .command(Commands.AUTH)
-        .author(user)
-        .text(password.getText()).build());
-        if(message.getText().equals("yes")) {
+                .command(Commands.AUTH)
+                .author(user)
+                .text(password.getText())
+                .build());
 
+        if (message.getText().equals("yes")) {
             Stage stage = (Stage) logIn.getScene().getWindow();
             stage.close();
 
@@ -42,8 +43,8 @@ public class Authorization {
             stage.setTitle("Cloud");
             stage.setScene(new Scene(root1));
             stage.show();
-        }else{
-            System.out.println("wegrt12ert2ee");
+        } else {
+            System.out.println("false");
         }
     }
 

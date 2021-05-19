@@ -28,20 +28,22 @@ public class ChatControllerV2 implements Initializable {
     public ListView<String> listViewServer;
     public ListView<String> listViewClient;
     public TextField input;
-
-
     private String clientPath = ("./client/clientFiles/");
+    @Override
+    public void initialize(URL location, ResourceBundle resources) { }
+
     public void get(ActionEvent actionEvent) throws IOException {
         String filename = listViewServer.getSelectionModel().getSelectedItem();
-        Net.getOs().writeObject(Message.builder()
+        Message message = Net.sendMessage(Message.builder()
                 .command(Commands.GET_FILE)
                 .fileName(filename)
                 .createdAt(LocalDateTime.now())
                 .author("user")
                 .build());
+        if (message.equals(Commands.GET_FILE)) getFile(message);
     }
 
-    public void send(ActionEvent actionEvent) throws IOException {
+    public void send(ActionEvent actionEvent) {
         Platform.runLater(() -> {
             try {
                 String filename = listViewClient.getSelectionModel().getSelectedItem();
@@ -51,7 +53,7 @@ public class ChatControllerV2 implements Initializable {
                     if (!reader.ready()) break;
                     text.append(reader.readLine()).append("\n");
                 }
-                Net.getOs().writeObject(Message.builder()
+                Message message = Net.sendMessage(Message.builder()
                         .command(Commands.SEND_FILE)
                         .fileName(filename)
                         .createdAt(LocalDateTime.now())
@@ -99,29 +101,17 @@ public class ChatControllerV2 implements Initializable {
     }
 
     public void refresh(ActionEvent actionEvent) throws IOException {
-        Net.getOs().writeObject(Message.builder()
+        try{
+        Message message = Net.sendMessage(Message.builder()
                 .command(Commands.REFRESH)
                 .createdAt(LocalDateTime.now())
                 .author("user")
                 .build());
+        if (message.equals(Commands.REFRESH)) serverView();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        Thread service = new Thread(() -> {
-            try {
-                while (true) {
-                    Message message = (Message) Net.getIs().readObject();
-                    Commands command = message.getCommand();
-                    if (command.equals(Commands.REFRESH)) serverView();
-                    else if (command.equals(Commands.GET_FILE)) getFile(message);
-                }
-            } catch (Exception e) {
-                log.error(e.getMessage());
-            }
-        });
 
-        service.setDaemon(true);
-        service.start();
-    }
 }

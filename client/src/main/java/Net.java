@@ -38,7 +38,6 @@ public class Net {
             e.printStackTrace();
         }
     }
-
     public static Message sendMessage(Message mes){
         try {
             os.writeObject(mes);
