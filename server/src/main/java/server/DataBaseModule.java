@@ -1,3 +1,4 @@
+package server;
 
 import model.File;
 import model.User;
@@ -80,7 +81,18 @@ public class DataBaseModule {
     }
 
     public static File findFileByName(String name) {
-        return HibernateSessionFactoryUtil.getSessionFactory().openSession().get(File.class, name);
+        try {
+            return HibernateSessionFactoryUtil.getSessionFactory().openSession().get(File.class, name);
+        }catch (Exception e){
+            return null;
+        }
+    }
+    public static User findUserByName(String name) {
+        try {
+            return HibernateSessionFactoryUtil.getSessionFactory().openSession().get(User.class, name);
+        }catch (Exception e){
+            return null;
+        }
     }
 
     public static boolean checkPass(String name, String pass) {

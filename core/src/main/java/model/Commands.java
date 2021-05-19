@@ -6,5 +6,6 @@ public enum Commands implements Serializable {
     GET_FILE,
     SEND_FILE,
     INFO,
-    REFRESH
+    REFRESH,
+    AUTH
 }

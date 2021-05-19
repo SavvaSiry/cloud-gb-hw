@@ -25,49 +25,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class ChatControllerV2 implements Initializable {
-
-    public TextField input;
     public ListView<String> listViewServer;
-    private ObjectDecoderInputStream is;
-    private ObjectEncoderOutputStream os;
     public ListView<String> listViewClient;
+    public TextField input;
+
+
     private String clientPath = ("./client/clientFiles/");
-
-    @SneakyThrows
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-
-        Socket socket = new Socket("localhost", 8189);
-
-        os = new ObjectEncoderOutputStream(socket.getOutputStream());
-        is = new ObjectDecoderInputStream(socket.getInputStream());
-
-        /*DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
-         String s = String.format("%s: %s", //[%s]
-         *//*message.getCreatedAt().format(formatter),*//* message.getAuthor(), message.getText());
-                    Platform.runLater(() -> input.setText(s));*/
-
-        Thread service = new Thread(() -> {
-            try {
-                while (true) {
-                    Message message = (Message) is.readObject();
-                    Commands command = message.getCommand();
-                    if (command.equals(Commands.REFRESH)) serverView();
-                    else if (command.equals(Commands.GET_FILE)) getFile(message);
-                }
-            } catch (Exception e) {
-                log.error(e.getMessage());
-            }
-        });
-
-        service.setDaemon(true);
-        service.start();
-    }
-
     public void get(ActionEvent actionEvent) throws IOException {
         String filename = listViewServer.getSelectionModel().getSelectedItem();
-
-        os.writeObject(Message.builder()
+        Net.getOs().writeObject(Message.builder()
                 .command(Commands.GET_FILE)
                 .fileName(filename)
                 .createdAt(LocalDateTime.now())
@@ -85,7 +51,7 @@ public class ChatControllerV2 implements Initializable {
                     if (!reader.ready()) break;
                     text.append(reader.readLine()).append("\n");
                 }
-                os.writeObject(Message.builder()
+                Net.getOs().writeObject(Message.builder()
                         .command(Commands.SEND_FILE)
                         .fileName(filename)
                         .createdAt(LocalDateTime.now())
@@ -96,28 +62,6 @@ public class ChatControllerV2 implements Initializable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        });
-    }
-
-    private void clientView() throws IOException {
-        List<String> clientFiles = Files.list(Paths.get(clientPath))
-                .map(path -> path.getFileName().toString())
-                .collect(Collectors.toList());
-        Platform.runLater(() -> {
-            listViewClient.getItems().clear();
-            listViewClient.getItems().addAll(clientFiles);
-        });
-    }
-
-    private void serverView() throws IOException, ClassNotFoundException {
-        clientView();
-        Message message = (Message) is.readObject();
-        StringBuilder stringBuilder = new StringBuilder(message.getText());
-        stringBuilder.deleteCharAt(message.getText().length() - 1).deleteCharAt(0);
-        List<String> list = Arrays.asList(stringBuilder.toString().split(", "));
-        Platform.runLater(() -> {
-            listViewServer.getItems().clear();
-            listViewServer.getItems().addAll(list);
         });
     }
 
@@ -132,11 +76,52 @@ public class ChatControllerV2 implements Initializable {
         clientView();
     }
 
+    public void clientView() throws IOException {
+        List<String> clientFiles = Files.list(Paths.get(clientPath))
+                .map(path -> path.getFileName().toString())
+                .collect(Collectors.toList());
+        Platform.runLater(() -> {
+            listViewClient.getItems().clear();
+            listViewClient.getItems().addAll(clientFiles);
+        });
+    }
+
+    private void serverView() throws IOException, ClassNotFoundException {
+        clientView();
+        Message message = (Message) Net.getIs().readObject();
+        StringBuilder stringBuilder = new StringBuilder(message.getText());
+        stringBuilder.deleteCharAt(message.getText().length() - 1).deleteCharAt(0);
+        List<String> list = Arrays.asList(stringBuilder.toString().split(", "));
+        Platform.runLater(() -> {
+            listViewServer.getItems().clear();
+            listViewServer.getItems().addAll(list);
+        });
+    }
+
     public void refresh(ActionEvent actionEvent) throws IOException {
-        os.writeObject(Message.builder()
+        Net.getOs().writeObject(Message.builder()
                 .command(Commands.REFRESH)
                 .createdAt(LocalDateTime.now())
                 .author("user")
                 .build());
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        Thread service = new Thread(() -> {
+            try {
+                while (true) {
+                    Message message = (Message) Net.getIs().readObject();
+                    Commands command = message.getCommand();
+                    if (command.equals(Commands.REFRESH)) serverView();
+                    else if (command.equals(Commands.GET_FILE)) getFile(message);
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        });
+
+        service.setDaemon(true);
+        service.start();
     }
 }

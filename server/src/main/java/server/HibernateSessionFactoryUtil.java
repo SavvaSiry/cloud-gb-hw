@@ -1,3 +1,5 @@
+package server;
+
 import model.File;
 import model.User;
 import org.hibernate.SessionFactory;

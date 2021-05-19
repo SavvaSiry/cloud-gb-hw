@@ -1,10 +1,9 @@
-package pipeline;
+package server.pipeline;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import model.Commands;
 import model.Message;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,6 +11,8 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import model.User;
+import server.DataBaseModule;
 
 public class SerialHandler extends SimpleChannelInboundHandler<Message> {
 
@@ -26,6 +27,8 @@ public class SerialHandler extends SimpleChannelInboundHandler<Message> {
             getFile(ctx, message);
         } else if (message.getCommand().equals(Commands.REFRESH)) {
             refreshFiles(ctx, message);
+        } else if (message.getCommand().equals(Commands.AUTH)) {
+            auth(ctx, message);
         }
     }
 
@@ -65,5 +68,41 @@ public class SerialHandler extends SimpleChannelInboundHandler<Message> {
                 .text(text.toString())
                 .author("server")
                 .build()));
+    }
+
+    private void auth(ChannelHandlerContext ctx, Message message){
+        User user = DataBaseModule.findUserByName(message.getAuthor());
+        if(user != null){
+            if(user.getPass().equals(message.getText())){
+                ctx.writeAndFlush(Message.builder()
+                .author("server")
+                .command(Commands.AUTH)
+                .text("yes")
+                .build());
+            }
+            else{
+                ctx.writeAndFlush(Message.builder()
+                        .author("server")
+                        .command(Commands.AUTH)
+                        .text("no")
+                        .build());
+            }
+        }else{
+            try {
+                User newuser = new User(message.getAuthor(), message.getText());
+                DataBaseModule.save(newuser);
+                ctx.writeAndFlush(Message.builder()
+                        .author("server")
+                        .command(Commands.AUTH)
+                        .text("yes")
+                        .build());
+            }catch (Exception e){
+                ctx.writeAndFlush(Message.builder()
+                        .author("server")
+                        .command(Commands.AUTH)
+                        .text("no")
+                        .build());
+            }
+        }
     }
 }

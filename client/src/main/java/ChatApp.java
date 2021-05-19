@@ -12,6 +12,7 @@ public class ChatApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        String name;
         Parent parent = FXMLLoader.load(getClass().getResource("authorization.fxml"));
         primaryStage.setScene(new Scene(parent));
         primaryStage.show();
