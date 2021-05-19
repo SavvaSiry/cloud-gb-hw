@@ -81,18 +81,16 @@ public class DataBaseModule {
     }
 
     public static File findFileByName(String name) {
-        try {
-            return HibernateSessionFactoryUtil.getSessionFactory().openSession().get(File.class, name);
-        }catch (Exception e){
-            return null;
+        for(File file : findAllFiles()){
+            if(file.getName().equals(name)) return file;
         }
+        return null;
     }
     public static User findUserByName(String name) {
-        try {
-            return HibernateSessionFactoryUtil.getSessionFactory().openSession().get(User.class, name);
-        }catch (Exception e){
-            return null;
+        for(User user : findAllUsers()){
+            if(user.getName().equals(name))return user;
         }
+        return null;
     }
 
     public static boolean checkPass(String name, String pass) {
